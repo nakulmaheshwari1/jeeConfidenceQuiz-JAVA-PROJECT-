@@ -1,0 +1,349 @@
+// Source code is decompiled from a .class file using FernFlower decompiler (from Intellij IDEA).
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Iterator;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+public class JEEConfidenceQuiz extends JFrame implements ActionListener {
+   private Student student;
+   private Quiz quiz;
+   private JPanel regPanel;
+   private JPanel quizPanel;
+   private JTextField nameField;
+   private JTextField ageField;
+   private JTextField emailField;
+   private JButton regButton;
+   private JButton nextButton;
+   private JLabel subjectLabel;
+   private JLabel questionLabel;
+   private JLabel progressLabel;
+   private JRadioButton[] options;
+   private ButtonGroup optionGroup;
+   private JRadioButton highConf;
+   private JRadioButton mediumConf;
+   private JRadioButton lowConf;
+   private ButtonGroup confGroup;
+   private JProgressBar progressBar;
+
+   public JEEConfidenceQuiz() {
+      this.createRegistrationGUI();
+      this.setTitle("JEE Confidence Quiz");
+      this.setSize(820, 520);
+      this.setDefaultCloseOperation(3);
+      this.setLocationRelativeTo((Component)null);
+      this.setVisible(true);
+   }
+
+   private void createRegistrationGUI() {
+      this.regPanel = new JPanel(new GridBagLayout());
+      this.regPanel.setBackground(new Color(230, 240, 255));
+      GridBagConstraints var1 = new GridBagConstraints();
+      var1.insets = new Insets(8, 12, 8, 12);
+      var1.fill = 2;
+      JLabel var2 = new JLabel("JEE Confidence Quiz");
+      var2.setFont(new Font("SansSerif", 1, 60));
+      var2.setHorizontalAlignment(0);
+      var1.gridx = 0;
+      var1.gridy = 0;
+      var1.gridwidth = 2;
+      this.regPanel.add(var2, var1);
+      var1.gridwidth = 1;
+      var1.gridy = 1;
+      var1.gridx = 0;
+      this.regPanel.add(new JLabel("Name:"), var1);
+      this.nameField = new JTextField();
+      var1.gridx = 1;
+      this.regPanel.add(this.nameField, var1);
+      var1.gridy = 2;
+      var1.gridx = 0;
+      this.regPanel.add(new JLabel("Age:"), var1);
+      this.ageField = new JTextField();
+      var1.gridx = 1;
+      this.regPanel.add(this.ageField, var1);
+      var1.gridy = 3;
+      var1.gridx = 0;
+      this.regPanel.add(new JLabel("Email:"), var1);
+      this.emailField = new JTextField();
+      var1.gridx = 1;
+      this.regPanel.add(this.emailField, var1);
+      this.regButton = new JButton("Register & Start Quiz");
+      this.regButton.addActionListener((var1x) -> {
+         this.registerStudent();
+      });
+      var1.gridy = 4;
+      var1.gridx = 0;
+      var1.gridwidth = 2;
+      this.regPanel.add(this.regButton, var1);
+      this.add(this.regPanel);
+   }
+
+   private void registerStudent() {
+      try {
+         String var1 = this.nameField.getText().trim();
+         String var2 = this.emailField.getText().trim();
+         int var3 = Integer.parseInt(this.ageField.getText().trim());
+         if (var1.isEmpty() || var2.isEmpty()) {
+            throw new Exception("Empty fields");
+         }
+
+         this.student = new Student(var1, var2, var3);
+         this.initializeQuizData();
+         this.quiz = new Quiz(this.student);
+         this.remove(this.regPanel);
+         this.setupQuizGUI();
+         this.quiz.start();
+         this.displayQuestion();
+      } catch (Exception var4) {
+         JOptionPane.showMessageDialog(this, "Invalid input: provide valid name, age (integer) and email.");
+      }
+
+   }
+
+   private void setupQuizGUI() {
+      this.quizPanel = new JPanel(new BorderLayout(10, 10));
+      this.quizPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+      this.quizPanel.setBackground(new Color(250, 250, 255));
+      JPanel var1 = new JPanel(new BorderLayout());
+      var1.setOpaque(false);
+      this.subjectLabel = new JLabel();
+      this.subjectLabel.setFont(new Font("SansSerif", 1, 30));
+      this.subjectLabel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+      var1.add(this.subjectLabel, "West");
+      this.progressBar = new JProgressBar(0, this.student.getSubjects().size() * 4 * 7);
+      this.progressBar.setStringPainted(true);
+      var1.add(this.progressBar, "East");
+      this.quizPanel.add(var1, "North");
+      JPanel var2 = new JPanel(new GridBagLayout());
+      var2.setOpaque(false);
+      GridBagConstraints var3 = new GridBagConstraints();
+      var3.insets = new Insets(6, 6, 6, 6);
+      var3.fill = 2;
+      var3.gridx = 0;
+      var3.gridy = 0;
+      var3.gridwidth = 2;
+      this.questionLabel = new JLabel();
+      this.questionLabel.setFont(new Font("SansSerif", 1, 25));
+      this.questionLabel.setVerticalAlignment(1);
+      var2.add(this.questionLabel, var3);
+      this.options = new JRadioButton[4];
+      this.optionGroup = new ButtonGroup();
+      var3.gridwidth = 1;
+
+      for(int var4 = 0; var4 < 4; ++var4) {
+         var3.gridy = var4 + 1;
+         var3.gridx = 0;
+         this.options[var4] = new JRadioButton();
+         this.options[var4].setFont(new Font("SansSerif", 0, 14));
+         this.optionGroup.add(this.options[var4]);
+         var2.add(this.options[var4], var3);
+      }
+
+      JPanel var6 = new JPanel(new FlowLayout(0));
+      var6.setOpaque(false);
+      var6.add(new JLabel("Confidence: "));
+      this.highConf = new JRadioButton("High");
+      this.mediumConf = new JRadioButton("Medium");
+      this.lowConf = new JRadioButton("Low");
+      this.highConf.setFont(new Font("SansSerif", 0, 20));
+      this.mediumConf.setFont(new Font("SansSerif", 0, 20));
+      this.lowConf.setFont(new Font("SansSerif", 0, 20));
+      this.confGroup = new ButtonGroup();
+      this.confGroup.add(this.highConf);
+      this.confGroup.add(this.mediumConf);
+      this.confGroup.add(this.lowConf);
+      var6.add(this.highConf);
+      var6.add(this.mediumConf);
+      var6.add(this.lowConf);
+      var3.gridy = 5;
+      var3.gridx = 0;
+      var3.gridwidth = 2;
+      var2.add(var6, var3);
+      this.progressLabel = new JLabel();
+      this.progressLabel.setFont(new Font("SansSerif", 1, 14));
+      var3.gridy = 6;
+      var2.add(this.progressLabel, var3);
+      this.quizPanel.add(var2, "Center");
+      this.nextButton = new JButton("Next");
+      this.nextButton.addActionListener(this);
+      JPanel var5 = new JPanel(new FlowLayout(2));
+      var5.setOpaque(false);
+      var5.add(this.nextButton);
+      this.quizPanel.add(var5, "South");
+      this.add(this.quizPanel);
+      this.revalidate();
+      this.repaint();
+   }
+
+   private void updateProgressBar() {
+      int var1 = this.student.getTotalScore();
+      int var2 = this.student.getSubjects().size() * 3 * 4;
+      int var3 = 0;
+      Iterator var4 = this.student.getSubjects().iterator();
+
+      while(var4.hasNext()) {
+         Subject var5 = (Subject)var4.next();
+
+         Subtopic var7;
+         for(Iterator var6 = var5.getSubtopics().iterator(); var6.hasNext(); var3 += var7.getConfidencePercentage() == 0.0 ? 0 : (int)Math.round(var7.getConfidencePercentage() / 100.0 * (double)var7.getQuestions().size())) {
+            var7 = (Subtopic)var6.next();
+         }
+      }
+
+      int var8 = this.quiz.subjectIndex * 3 * 4 + this.quiz.subtopicIndex * 4 + this.quiz.questionIndex;
+      this.progressBar.setMaximum(var2);
+      this.progressBar.setValue(Math.min(var2, var8));
+      JProgressBar var10000 = this.progressBar;
+      int var10001 = Math.min(var2, var8);
+      var10000.setString("Progress: " + var10001 + " / " + var2 + " questions");
+   }
+
+   private void displayQuestion() {
+      MCQQuestion var1 = this.quiz.getCurrentQuestion();
+      if (var1 == null) {
+         if (this.quiz.isQuizFinished()) {
+            this.showResults();
+         } else {
+            this.showResults();
+         }
+      } else {
+         JLabel var10000 = this.subjectLabel;
+         Subject var10001 = (Subject)this.student.getSubjects().get(this.quiz.subjectIndex);
+         var10000.setText("Subject: " + var10001.getName());
+         this.questionLabel.setText("<html><body style='width:600px'>Q: " + var1.getText() + "</body></html>");
+         String[] var2 = var1.getOptions();
+
+         for(int var3 = 0; var3 < 4; ++var3) {
+            this.options[var3].setText(var2[var3]);
+         }
+
+         this.optionGroup.clearSelection();
+         this.confGroup.clearSelection();
+         int var4 = this.quiz.questionIndex + 1;
+         this.progressLabel.setText("Question " + var4 + " of " + this.quiz.currentQuestions.size() + " (Subtopic: " + this.quiz.currentSubtopic.getName() + ")");
+         this.updateProgressBar();
+      }
+   }
+
+   public void actionPerformed(ActionEvent var1) {
+      int var2 = -1;
+
+      int var3;
+      for(var3 = 0; var3 < 4; ++var3) {
+         if (this.options[var3].isSelected()) {
+            var2 = var3;
+            break;
+         }
+      }
+
+      if (var2 == -1) {
+         JOptionPane.showMessageDialog(this, "Select an answer!");
+      } else {
+         var3 = this.highConf.isSelected() ? 3 : (this.mediumConf.isSelected() ? 2 : (this.lowConf.isSelected() ? 1 : 0));
+         if (var3 == 0) {
+            JOptionPane.showMessageDialog(this, "Select your confidence level!");
+         } else {
+            this.quiz.submitAnswer(var2, var3);
+            this.displayQuestion();
+         }
+      }
+   }
+
+   private void showResults() {
+      StringBuilder var1 = new StringBuilder();
+      var1.append("******** FINAL RESULT ********\nTotal Score: " + this.student.getTotalScore() + "\n\n");
+      Iterator var2 = this.student.getSubjects().iterator();
+
+      while(var2.hasNext()) {
+         Subject var3 = (Subject)var2.next();
+         String var10001 = var3.getName();
+         var1.append(var10001 + ": " + var3.getTotalScore() + "\n");
+         Iterator var4 = var3.getSubtopics().iterator();
+
+         while(var4.hasNext()) {
+            Subtopic var5 = (Subtopic)var4.next();
+            var10001 = var5.getName();
+            var1.append("  " + var10001 + " Score:" + var5.getScore() + " Conf:" + String.format("%.2f", var5.getConfidencePercentage()) + "%\n");
+            if (var5.getConfidencePercentage() >= 75.0) {
+               var1.append("    Feedback: You are good to go!\n");
+            } else if (var5.getConfidencePercentage() >= 50.0) {
+               var1.append("    Feedback: Revise concepts.\n");
+            } else {
+               var1.append("    Feedback: Work harder!\n");
+            }
+         }
+
+         var1.append("\n");
+      }
+
+      JTextArea var6 = new JTextArea(var1.toString());
+      var6.setEditable(false);
+      var6.setFont(new Font("Monospaced", 0, 12));
+      JScrollPane var7 = new JScrollPane(var6);
+      var7.setPreferredSize(new Dimension(600, 400));
+      JOptionPane.showMessageDialog(this, var7, "Result", 1);
+      System.exit(0);
+   }
+
+   private void initializeQuizData() {
+      String[] var1 = new String[]{"Physics", "Chemistry", "Maths"};
+      String[][] var2 = new String[][]{{"Mechanics", "Fluids", "Electromagnetism"}, {"Physical", "Organic", "Inorganic"}, {"Algebra", "Calculus", "Geometry"}};
+      String[][][][] var3 = new String[3][3][4][6];
+      var3[0][0] = new String[][]{{"A 2kg block is pushed with 10N. Acceleration?", "2", "5", "10", "20", "0"}, {"Free fall from 20m. Velocity after 2s?", "10", "15", "20", "25", "0"}, {"Force on 5kg at 2m/s²?", "5", "10", "15", "20", "0"}, {"Mass 3kg, F=12N. Acceleration?", "2", "3", "4", "6", "1"}};
+      var3[0][1] = new String[][]{{"Fluid density effect on pressure?", "Direct", "Inverse", "None", "Cannot say", "0"}, {"Pascal principle example?", "Hydraulic lift", "Boiling", "Magnet", "Spring", "0"}, {"Archimedes principle?", "Upthrust", "Friction", "Pressure", "Velocity", "0"}, {"Viscosity increases?", "Speed decreases", "Speed increases", "No effect", "Cannot say", "0"}};
+      var3[0][2] = new String[][]{{"EMF across 5Ω resistor with 10A?", "50V", "10V", "5V", "20V", "0"}, {"Magnetic force direction?", "Perpendicular", "Parallel", "Opposite", "Along field", "0"}, {"Lenz law example?", "Induced current", "Resistance", "Velocity", "Acceleration", "0"}, {"Faraday law unit?", "Volt", "Ampere", "Newton", "Joule", "0"}};
+      var3[1][0] = new String[][]{{"HCl + NaOH reaction?", "Salt", "Water", "Acid", "Base", "0"}, {"Organic compound CH4?", "Methane", "Ethanol", "Ethane", "Propane", "0"}, {"Atomic number of O?", "6", "8", "16", "12", "1"}, {"Periodic table group of Na?", "Alkali", "Halogen", "Noble", "Transition", "0"}};
+      var3[1][1] = new String[][]{{"Alkane formula C2H6?", "Ethane", "Methane", "Propane", "Butane", "0"}, {"pH of neutral solution?", "7", "0", "14", "1", "0"}, {"Redox example?", "Zn+CuSO4", "H2O", "CO2", "NaCl", "0"}, {"Balancing H2+O2?", "H2O", "H2O2", "OH", "H2", "0"}};
+      var3[1][2] = new String[][]{{"Which is amphoteric?", "Aluminium", "Sodium", "Chlorine", "Helium", "0"}, {"Most electronegative element?", "Fluorine", "Oxygen", "Chlorine", "Nitrogen", "0"}, {"Ionic bond formed by?", "Transfer of electrons", "Sharing of electrons", "No electrons", "Both", "0"}, {"Common salt name?", "Sodium Chloride", "Sodium Oxide", "Potassium Chloride", "Calcium Carbonate", "0"}};
+      var3[2][0] = new String[][]{{"Solve x+2=5", "2", "3", "5", "4", "1"}, {"Derivative of x²?", "2x", "x²", "x", "1", "0"}, {"Integral of 2x?", "x²", "2x²", "x", "0", "0"}, {"Sum of 1+2+3?", "3", "6", "10", "1", "1"}};
+      var3[2][1] = new String[][]{{"Determinant of [[1,2],[3,4]]?", "-2", "2", "0", "1", "0"}, {"Solve y=2x+3, y when x=2?", "7", "5", "6", "8", "0"}, {"Area of circle r=1?", "3.14", "6.28", "1", "0", "0"}, {"Slope of line through (0,0) and (2,4)?", "2", "0", "1", "4", "0"}};
+      var3[2][2] = new String[][]{{"Angle sum of triangle?", "180", "90", "360", "270", "0"}, {"Right triangle Pythagoras?", "a^2+b^2=c^2", "a+b=c", "ab=c", "None", "0"}, {"Area of square side 2?", "4", "8", "2", "16", "0"}, {"Perimeter of circle?", "2πr", "πr^2", "πd", "πr", "0"}};
+
+      for(int var4 = 0; var4 < var1.length; ++var4) {
+         Subject var5 = new Subject(var1[var4]);
+
+         for(int var6 = 0; var6 < 3; ++var6) {
+            Subtopic var7 = new Subtopic(var2[var4][var6]);
+
+            for(int var8 = 0; var8 < 4; ++var8) {
+               String[] var9 = var3[var4][var6][var8];
+               String[] var10 = new String[]{var9[1], var9[2], var9[3], var9[4]};
+               int var11 = Integer.parseInt(var9[5]);
+               MCQQuestion var12 = new MCQQuestion(var9[0], var10, var11, var6);
+               var7.addQuestion(var12);
+            }
+
+            var5.addSubtopic(var7);
+         }
+
+         this.student.addSubject(var5);
+      }
+
+   }
+
+   public static void main(String[] var0) {
+      SwingUtilities.invokeLater(() -> {
+         new JEEConfidenceQuiz();
+      });
+   }
+}
